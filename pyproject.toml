@@ -1,0 +1,11 @@
+[project]
+name = "apache-iceberg-hands-on"
+version = "0.1.0"
+description = "ローカル環境で Apache Iceberg を試すハンズオン（ホスト側の開発ツール）"
+requires-python = ">=3.10"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "nbstripout>=0.8",
+]

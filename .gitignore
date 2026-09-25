@@ -1,0 +1,10 @@
+# ローカル専用の設定（.env.example をコピーして作る）
+.env
+
+# ダウンロードしたサンプルデータ
+data/
+
+# Python
+.venv/
+__pycache__/
+.ipynb_checkpoints/

@@ -1,0 +1,198 @@
+# ローカル Iceberg ハンズオン環境
+#   基盤（profile なし）: rustfs, postgres, polaris-bootstrap, polaris, polaris-setup
+#   profile "spark"    : jupyter
+#   profile "trino"    : trino
+# 設計は docs/design.md を参照。公開ポートはすべて 127.0.0.1 に限定する。
+
+name: iceberg-handson
+
+services:
+  # --- ストレージ: S3 互換のオブジェクトストレージ ---------------------------
+  rustfs:
+    image: rustfs/rustfs:1.0.0
+    ports:
+      - "127.0.0.1:9000:9000" # S3 API
+      - "127.0.0.1:9001:9001" # Web コンソール
+    environment:
+      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY}
+      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY}
+      RUSTFS_VOLUMES: /data
+      RUSTFS_ADDRESS: ":9000"
+      RUSTFS_CONSOLE_ENABLE: "true"
+      RUSTFS_CONSOLE_ADDRESS: ":9001"
+    volumes:
+      - rustfs-data:/data
+    # 大きなファイルの読み書きが続くと 512MB では OOM で落ちたため 1GB にする
+    mem_limit: 1g
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://127.0.0.1:9000/health && curl -sf http://127.0.0.1:9001/rustfs/console/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 5s
+
+  # --- ストレージの閲覧用 Web UI ---------------------------------------------
+  # RustFS 1.0.0 のコンソールはログイン後に「セッションが切れた」となる不具合があるため
+  # （https://github.com/rustfs/rustfs/issues/8013）、軽量な S3 ブラウザを代わりに使う。
+  s3manager:
+    image: cloudlena/s3manager:v0.10.0
+    depends_on:
+      rustfs:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8081:8080" # Web UI
+    environment:
+      ENDPOINT: rustfs:9000
+      ACCESS_KEY_ID: ${RUSTFS_ACCESS_KEY}
+      SECRET_ACCESS_KEY: ${RUSTFS_SECRET_KEY}
+      REGION: us-east-1
+      USE_SSL: "false"
+      ALLOW_DELETE: "true"
+    # 60MB の Parquet をアップロードすると 64MB では OOM で落ちたため 256MB にする
+    mem_limit: 256m
+    restart: unless-stopped
+
+  # --- カタログ DB: Polaris のメタデータ保存先 --------------------------------
+  postgres:
+    image: postgres:18.6
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: POLARIS
+    volumes:
+      - postgres-data:/var/lib/postgresql
+    mem_limit: 256m
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # --- Polaris の DB 初期化（テーブル作成と root プリンシパルの登録）して終了 ---
+  # 既に初期化済みなら何もしないので、毎回実行しても安全。
+  polaris-bootstrap:
+    image: apache/polaris-admin-tool:1.7.0
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment: &polaris-db
+      POLARIS_PERSISTENCE_TYPE: relational-jdbc
+      POLARIS_PERSISTENCE_RELATIONAL_JDBC_DATABASE_TYPE: postgresql
+      QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://postgres:5432/POLARIS
+      QUARKUS_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      QUARKUS_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+    command:
+      - bootstrap
+      - --realm=POLARIS
+      - --credential=POLARIS,${POLARIS_ROOT_CLIENT_ID},${POLARIS_ROOT_CLIENT_SECRET}
+
+  # --- カタログ: Iceberg REST カタログ -----------------------------------------
+  polaris:
+    image: apache/polaris:1.7.0
+    depends_on:
+      polaris-bootstrap:
+        condition: service_completed_successfully
+      rustfs:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8181:8181" # REST API（Iceberg REST カタログ + Management API）
+    environment:
+      <<: *polaris-db
+      POLARIS_REALM_CONTEXT_REALMS: POLARIS
+      QUARKUS_OTEL_SDK_DISABLED: "true"
+      # Polaris が STS AssumeRole を呼ぶときの認証情報（RustFS の管理者キー）
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: ${RUSTFS_ACCESS_KEY}
+      AWS_SECRET_ACCESS_KEY: ${RUSTFS_SECRET_KEY}
+      JAVA_OPTS_APPEND: -Xmx512m
+    mem_limit: 1g
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8182/q/health"]
+      interval: 3s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+
+  # --- 初期設定: バケット、カタログ、プリンシパル、ロール、名前空間 ------------
+  # 完了後も待機し続け、ヘルスチェックで「完了した」ことを示す（make up の --wait のため）。
+  polaris-setup:
+    image: alpine/curl:8.21.0
+    depends_on:
+      polaris:
+        condition: service_healthy
+    environment:
+      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY}
+      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY}
+      POLARIS_ROOT_CLIENT_ID: ${POLARIS_ROOT_CLIENT_ID}
+      POLARIS_ROOT_CLIENT_SECRET: ${POLARIS_ROOT_CLIENT_SECRET}
+      POLARIS_CLIENT_ID: ${POLARIS_CLIENT_ID}
+      POLARIS_CLIENT_SECRET: ${POLARIS_CLIENT_SECRET}
+    volumes:
+      - ./docker/polaris/setup.sh:/setup.sh:ro
+    entrypoint: ["/bin/sh", "-c", "/setup.sh && touch /tmp/done && exec sleep infinity"]
+    mem_limit: 64m
+    healthcheck:
+      test: ["CMD", "test", "-f", "/tmp/done"]
+      interval: 2s
+      timeout: 5s
+      retries: 60
+
+  # --- クエリエンジン: Spark + JupyterLab + PyIceberg（profile: spark） --------
+  jupyter:
+    build: ./docker/jupyter
+    image: iceberg-handson-jupyter:local
+    profiles: [spark]
+    depends_on:
+      polaris-setup:
+        condition: service_healthy
+    # ホストのユーザーで動かし、ノートブックの所有者をホストと揃える
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    ports:
+      - "127.0.0.1:8888:8888" # JupyterLab
+      - "127.0.0.1:4040:4040" # Spark UI
+    environment:
+      POLARIS_CLIENT_ID: ${POLARIS_CLIENT_ID}
+      POLARIS_CLIENT_SECRET: ${POLARIS_CLIENT_SECRET}
+      # PyIceberg のカタログ設定（load_catalog("lakehouse") で読み込まれる）
+      PYICEBERG_CATALOG__LAKEHOUSE__TYPE: rest
+      PYICEBERG_CATALOG__LAKEHOUSE__URI: http://polaris:8181/api/catalog
+      PYICEBERG_CATALOG__LAKEHOUSE__WAREHOUSE: lakehouse
+      PYICEBERG_CATALOG__LAKEHOUSE__CREDENTIAL: ${POLARIS_CLIENT_ID}:${POLARIS_CLIENT_SECRET}
+      PYICEBERG_CATALOG__LAKEHOUSE__SCOPE: PRINCIPAL_ROLE:ALL
+      PYICEBERG_CATALOG__LAKEHOUSE__OAUTH2_SERVER_URI: http://polaris:8181/api/catalog/v1/oauth/tokens
+    volumes:
+      - ./handson:/workspace/handson
+      - ./data:/workspace/data:ro
+    mem_limit: 2g
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8888/api"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  # --- クエリエンジン: Trino（profile: trino） ---------------------------------
+  trino:
+    image: trinodb/trino:483
+    profiles: [trino]
+    depends_on:
+      polaris-setup:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8080:8080" # Web UI / API
+    environment:
+      POLARIS_CLIENT_ID: ${POLARIS_CLIENT_ID}
+      POLARIS_CLIENT_SECRET: ${POLARIS_CLIENT_SECRET}
+    volumes:
+      - ./docker/trino/catalog/lakehouse.properties:/etc/trino/catalog/lakehouse.properties:ro
+    mem_limit: 2g
+    healthcheck:
+      test: ["CMD", "/usr/lib/trino/bin/health-check"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+
+volumes:
+  rustfs-data:
+  postgres-data:
