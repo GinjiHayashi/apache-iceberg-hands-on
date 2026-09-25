@@ -22,7 +22,9 @@ services:
       RUSTFS_CONSOLE_ADDRESS: ":9001"
     volumes:
       - rustfs-data:/data
-    mem_limit: 512m
+    # 大きなファイルの読み書きが続くと 512MB では OOM で落ちたため 1GB にする
+    mem_limit: 1g
+    restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "curl -sf http://127.0.0.1:9000/health && curl -sf http://127.0.0.1:9001/rustfs/console/health"]
       interval: 5s
