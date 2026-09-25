@@ -10,10 +10,13 @@ FILE ?=
 help: ## コマンドの一覧を表示する
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
 
-setup: ## 初回の準備（.env の作成、ホストの開発ツールと nbstripout の導入）
+setup: ## 初回の準備（.env の作成。uv があればホストの開発ツールと nbstripout も入れる）
 	@test -f .env || cp .env.example .env
-	uv sync
-	uv run nbstripout --install --attributes .gitattributes
+	@if command -v uv >/dev/null; then \
+	  uv sync && uv run nbstripout --install --attributes .gitattributes; \
+	else \
+	  echo "uv がないので nbstripout の導入をスキップしました（ノートブックをコミットしないなら不要）"; \
+	fi
 
 up: ## 基盤（RustFS, PostgreSQL, Polaris）を起動する
 	$(COMPOSE) up -d --wait

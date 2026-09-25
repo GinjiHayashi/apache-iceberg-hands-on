@@ -4,7 +4,7 @@
 
 ## 現在のフェーズ
 
-**実装中**（Step 5）。要件と設計は確定済み。docs/tasks.md の上から順に進める。
+**実装完了・利用者の確認待ち**（Step 5）。docs/tasks.md の #8（VS Code からの接続確認）だけが残っている。
 
 フェーズの流れ: 要件定義 → 技術選定・設計 → タスク分解 → 実装。フェーズが進んだらこの節を更新する。
 
@@ -22,4 +22,8 @@
 
 ## コマンド
 
-環境構築後に追記する。
+操作は Makefile にまとめている（`make help` で一覧）。一覧と実際のコマンドは README.md を参照。
+
+- 起動と停止: `make up-all` / `make down`。完全に初期化するときは `make reset`
+- 動作確認: `make smoke`
+- ノートブックをコマンドラインで検証するとき: `docker compose exec -T jupyter jupyter nbconvert --to notebook --execute <ipynb> --output /tmp/out.ipynb`（出力は /tmp に置き、リポジトリのノートブックに実行結果を残さない）
