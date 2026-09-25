@@ -61,12 +61,17 @@ MGMT=$POLARIS/api/management/v1
 #   endpointInternal : Polaris 自身が S3 / STS にアクセスするときのアドレス
 #   どちらもコンテナ内から届く rustfs:9000 にする（docs/adr/0004 を参照）。
 # Polaris は STS AssumeRole で一時的な認証情報を発行し、クライアントに払い出す。
+#   drop-with-purge.enabled : DROP TABLE でデータファイルも消すことを許可する
+#                             （Trino の DROP TABLE は常にファイルごと消そうとするため必要）
 # ---------------------------------------------------------------------------
 call "カタログ $CATALOG を作成" -X POST $MGMT/catalogs "$@" -d '{
   "catalog": {
     "name": "'$CATALOG'",
     "type": "INTERNAL",
-    "properties": { "default-base-location": "s3://warehouse" },
+    "properties": {
+      "default-base-location": "s3://warehouse",
+      "polaris.config.drop-with-purge.enabled": "true"
+    },
     "storageConfigInfo": {
       "storageType": "S3",
       "allowedLocations": ["s3://warehouse"],

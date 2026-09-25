@@ -78,6 +78,7 @@ flowchart LR
    - `storageType: S3`、`allowedLocations: ["s3://warehouse"]`
    - `endpoint` / `endpointInternal`: `http://rustfs:9000`
    - `pathStyleAccess: true`、`region: us-east-1`
+   - `polaris.config.drop-with-purge.enabled: true`（Trino の DROP TABLE はファイルごと削除するため）
 3. プリンシパル `handson_user` を作り、リセット API（`/principals/{name}/reset`）で認証情報を `.env` の固定値に置き換える
 4. プリンシパルロールとカタログロールを作って紐付け、カタログロールに `CATALOG_MANAGE_CONTENT` を付与する
 5. `handson_user` の権限で名前空間 `handson` を作る
