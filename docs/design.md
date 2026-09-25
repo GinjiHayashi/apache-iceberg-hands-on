@@ -93,6 +93,7 @@ flowchart LR
 - `credential`、`scope=PRINCIPAL_ROLE:ALL`、`header.X-Iceberg-Access-Delegation=vended-credentials`
 - `spark.sql.extensions = org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions`
 - Iceberg の jar はイメージのビルド時に Maven Central から取得して `$SPARK_HOME/jars` に置く
+- `rest-metrics-reporting-enabled=false`（CTAS の途中でメトリクス送信が失敗し、警告が出るため）
 - 認証情報は環境変数から渡すため、`entrypoint.sh` が起動時にテンプレートから `spark-defaults.conf` を作る
 - ホストの UID はコンテナ内に登録がなく Hadoop のログインが失敗するので、`entrypoint.sh` が起動時に `/etc/passwd` に登録する
 
@@ -102,6 +103,7 @@ flowchart LR
 - `iceberg.rest-catalog.vended-credentials-enabled=true`
 - `fs.s3.enabled=true`、`s3.endpoint=http://rustfs:9000`、`s3.region=us-east-1`、`s3.path-style-access=true`（Trino は払い出された認証情報のうちキーだけを使うので、エンドポイントなどはここに書く）
 - `iceberg.add-files-procedure.enabled=true`（追加目標の `add_files` 用）
+- `iceberg.expire-snapshots.min-retention=0s`、`iceberg.remove-orphan-files.min-retention=0s`（07 で直近のものも対象にするため。ハンズオン用）
 
 **PyIceberg**：カタログ設定を環境変数（`PYICEBERG_CATALOG__LAKEHOUSE__*`）で渡すので、`load_catalog("lakehouse")` だけで接続できる。S3 の設定は Polaris から払い出されるものを使う。
 
