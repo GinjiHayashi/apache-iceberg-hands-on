@@ -28,7 +28,7 @@
 
 | # | タスク | 内容 | 状態 |
 | --- | --- | --- | --- |
-| 11 | 01_basic_crud | CREATE / INSERT / UPDATE / DELETE / MERGE | todo |
+| 11 | 01_basic_crud | CREATE / INSERT / UPDATE / DELETE / MERGE | done |
 | 12 | 02_time_travel | スナップショット、過去時点のクエリ、ロールバック | todo |
 | 13 | 03_schema_evolution | 列の追加・削除・名前変更。2025-01 の `cbd_congestion_fee` を題材にする | todo |
 | 14 | 04_partition_evolution | 隠しパーティション、パーティション仕様の変更 | todo |

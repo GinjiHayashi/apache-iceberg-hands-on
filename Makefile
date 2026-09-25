@@ -46,10 +46,10 @@ trino-cli: ## Trino CLI に接続する
 
 trino-sql: ## SQL ファイルを実行する（例: make trino-sql FILE=handson/01_basic_crud/trino.sql）
 	@test -n "$(FILE)" || (echo "FILE を指定してください" && exit 1)
-	$(COMPOSE) exec -T trino trino --catalog lakehouse --schema handson < $(FILE)
+	$(COMPOSE) exec -T trino trino --catalog lakehouse --schema handson --output-format ALIGNED < $(FILE)
 
 smoke: ## 動作確認（Trino でテーブルを作ってクエリを実行する）
-	$(COMPOSE) exec -T trino trino --catalog lakehouse --schema handson < scripts/smoke.sql
+	$(COMPOSE) exec -T trino trino --catalog lakehouse --schema handson --output-format ALIGNED < scripts/smoke.sql
 
 data: ## サンプルデータ（NYC タクシー）を data/ に取得する
 	./scripts/download_data.sh

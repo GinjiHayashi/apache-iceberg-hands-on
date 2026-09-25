@@ -137,6 +137,7 @@ services:
       PYICEBERG_CATALOG__LAKEHOUSE__WAREHOUSE: lakehouse
       PYICEBERG_CATALOG__LAKEHOUSE__CREDENTIAL: ${POLARIS_CLIENT_ID}:${POLARIS_CLIENT_SECRET}
       PYICEBERG_CATALOG__LAKEHOUSE__SCOPE: PRINCIPAL_ROLE:ALL
+      PYICEBERG_CATALOG__LAKEHOUSE__OAUTH2_SERVER_URI: http://polaris:8181/api/catalog/v1/oauth/tokens
     volumes:
       - ./handson:/workspace/handson
       - ./data:/workspace/data:ro

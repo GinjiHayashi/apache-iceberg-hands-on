@@ -8,8 +8,10 @@ spark.sql.catalog.lakehouse                          org.apache.iceberg.spark.Sp
 spark.sql.catalog.lakehouse.type                     rest
 spark.sql.catalog.lakehouse.uri                      http://polaris:8181/api/catalog
 spark.sql.catalog.lakehouse.warehouse                lakehouse
+spark.sql.catalog.lakehouse.rest.auth.type           oauth2
 spark.sql.catalog.lakehouse.credential               ${POLARIS_CLIENT_ID}:${POLARIS_CLIENT_SECRET}
 spark.sql.catalog.lakehouse.scope                    PRINCIPAL_ROLE:ALL
+spark.sql.catalog.lakehouse.oauth2-server-uri        http://polaris:8181/api/catalog/v1/oauth/tokens
 # Polaris から一時的な S3 認証情報を払い出してもらう（vended credentials）
 spark.sql.catalog.lakehouse.header.X-Iceberg-Access-Delegation  vended-credentials
 spark.sql.defaultCatalog                             lakehouse
@@ -18,3 +20,5 @@ spark.sql.defaultCatalog                             lakehouse
 spark.master                                         local[*]
 spark.driver.memory                                  1g
 spark.sql.shuffle.partitions                         4
+# ノートブックの出力に進捗バーを混ぜない
+spark.ui.showConsoleProgress                         false
