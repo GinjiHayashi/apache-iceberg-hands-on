@@ -35,7 +35,7 @@
 | 15 | 05_interoperability | Spark で書いて Trino で読む、およびその逆 | done |
 | 16 | 06_parquet_conversion | Spark の CTAS と PyIceberg の `add_files` を比べる。Trino の `add_files` は追加目標（任意） | done |
 | 17 | 07_maintenance | Compaction、スナップショットの失効、孤立ファイルの削除、マニフェストの統合を Spark と Trino の両方で行う | done |
-| 18 | 08_metadata_tables | `$snapshots`、`$files`、`$history` などの参照 | todo |
+| 18 | 08_metadata_tables | `$snapshots`、`$files`、`$history` などの参照 | done |
 | 19 | 09_pyiceberg | テーブル一覧、pandas / DuckDB への読み込み、簡単な追記 | todo |
 | 20 | 10_v3_upgrade（追加目標・任意） | v2 から v3 へのアップグレードと、各エンジンから読めるかの確認 | todo |
 
