@@ -33,7 +33,7 @@
 | 13 | 03_schema_evolution | 列の追加・削除・名前変更。2025-01 の `cbd_congestion_fee` を題材にする | done |
 | 14 | 04_partition_evolution | 隠しパーティション、パーティション仕様の変更 | done |
 | 15 | 05_interoperability | Spark で書いて Trino で読む、およびその逆 | done |
-| 16 | 06_parquet_conversion | Spark の CTAS と PyIceberg の `add_files` を比べる。Trino の `add_files` は追加目標（任意） | todo |
+| 16 | 06_parquet_conversion | Spark の CTAS と PyIceberg の `add_files` を比べる。Trino の `add_files` は追加目標（任意） | done |
 | 17 | 07_maintenance | Compaction、スナップショットの失効、孤立ファイルの削除、マニフェストの統合を Spark と Trino の両方で行う | todo |
 | 18 | 08_metadata_tables | `$snapshots`、`$files`、`$history` などの参照 | todo |
 | 19 | 09_pyiceberg | テーブル一覧、pandas / DuckDB への読み込み、簡単な追記 | todo |

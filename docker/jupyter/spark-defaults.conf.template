@@ -14,6 +14,8 @@ spark.sql.catalog.lakehouse.scope                    PRINCIPAL_ROLE:ALL
 spark.sql.catalog.lakehouse.oauth2-server-uri        http://polaris:8181/api/catalog/v1/oauth/tokens
 # Polaris から一時的な S3 認証情報を払い出してもらう（vended credentials）
 spark.sql.catalog.lakehouse.header.X-Iceberg-Access-Delegation  vended-credentials
+# メトリクスを Polaris に送らない（CTAS の途中で送ろうとして失敗の警告が出るため）
+spark.sql.catalog.lakehouse.rest-metrics-reporting-enabled  false
 spark.sql.defaultCatalog                             lakehouse
 
 # メモリの制約（コンテナ 2GB）に合わせる

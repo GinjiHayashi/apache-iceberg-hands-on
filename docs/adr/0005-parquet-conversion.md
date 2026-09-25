@@ -18,7 +18,7 @@
 ## 決定
 
 - 必須: Spark の CTAS（書き直す方式）と PyIceberg の `add_files`（書き直さない方式）
-- 追加目標（任意）: Trino の `add_files`（`iceberg.add-files-procedure.enabled=true`）
+- 追加目標（任意）: Trino の `add_files`（`iceberg.add-files-procedure.enabled=true`）。Polaris から払い出された認証情報のままで動くことを実装時に確認した
 
 ## 理由
 
@@ -29,3 +29,5 @@
 
 - `add_files` で登録したファイルは、スナップショットの失効などで削除されることがある。ハンズオンの中で注意として説明する
 - `add_files` はスキーマを検証しないので、列の型が合っていることを事前に確認する
+- 登録するファイルはテーブルの場所の下に置く必要がある（払い出される認証情報の範囲がテーブルの場所に限られるため）
+- 実装時の確認では、Trino の `add_files` で登録したファイルは `DROP TABLE` しても残った。Trino は中身のある場所にテーブルを作れないので、やり直すときは手でフォルダを消す
