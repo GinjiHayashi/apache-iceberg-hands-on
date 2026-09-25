@@ -24,7 +24,7 @@ Polaris、Spark、Trino、Iceberg は、バージョンの組み合わせによ�
 | PostgreSQL | 18.6 | 2026-09 |
 | RustFS | 1.0.0 | 2026-09-16 |
 | PyIceberg | 0.12.0 | 2026-09-01 |
-| 初期化用: `alpine/curl` / `amazon/aws-cli` | 8.21.0 / 2.36.8 | Polaris 公式ガイドで使われているもの |
+| 初期化用: `alpine/curl` | 8.21.0 | Polaris 公式ガイドで使われているもの |
 
 テーブルフォーマットは v2 で統一する。
 

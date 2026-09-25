@@ -115,6 +115,28 @@ services:
       timeout: 5s
       retries: 60
 
+  # --- クエリエンジン: Trino（profile: trino） ---------------------------------
+  trino:
+    image: trinodb/trino:483
+    profiles: [trino]
+    depends_on:
+      polaris-setup:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8080:8080" # Web UI / API
+    environment:
+      POLARIS_CLIENT_ID: ${POLARIS_CLIENT_ID}
+      POLARIS_CLIENT_SECRET: ${POLARIS_CLIENT_SECRET}
+    volumes:
+      - ./docker/trino/catalog/lakehouse.properties:/etc/trino/catalog/lakehouse.properties:ro
+    mem_limit: 2g
+    healthcheck:
+      test: ["CMD", "/usr/lib/trino/bin/health-check"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+
 volumes:
   rustfs-data:
   postgres-data:
