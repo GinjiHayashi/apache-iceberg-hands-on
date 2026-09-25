@@ -19,12 +19,14 @@ up: ## 基盤（RustFS, PostgreSQL, Polaris）を起動する
 	$(COMPOSE) up -d --wait
 
 up-spark: ## 基盤 + Spark（JupyterLab）を起動する
+	@mkdir -p data
 	$(COMPOSE) --profile spark up -d --wait
 
 up-trino: ## 基盤 + Trino を起動する
 	$(COMPOSE) --profile trino up -d --wait
 
 up-all: ## 基盤 + Spark + Trino を起動する
+	@mkdir -p data
 	$(COMPOSE) --profile spark --profile trino up -d --wait
 
 down: ## 停止する（データは残る）

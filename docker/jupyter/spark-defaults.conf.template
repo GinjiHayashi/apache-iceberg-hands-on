@@ -1,0 +1,20 @@
+# Spark の既定設定。entrypoint.sh が ${...} を環境変数で置き換えて spark-defaults.conf を作る。
+
+# Iceberg の SQL 拡張（CALL プロシージャ、ALTER TABLE ... ADD PARTITION FIELD など）
+spark.sql.extensions                                 org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions
+
+# lakehouse カタログ = Polaris（Iceberg REST カタログ）
+spark.sql.catalog.lakehouse                          org.apache.iceberg.spark.SparkCatalog
+spark.sql.catalog.lakehouse.type                     rest
+spark.sql.catalog.lakehouse.uri                      http://polaris:8181/api/catalog
+spark.sql.catalog.lakehouse.warehouse                lakehouse
+spark.sql.catalog.lakehouse.credential               ${POLARIS_CLIENT_ID}:${POLARIS_CLIENT_SECRET}
+spark.sql.catalog.lakehouse.scope                    PRINCIPAL_ROLE:ALL
+# Polaris から一時的な S3 認証情報を払い出してもらう（vended credentials）
+spark.sql.catalog.lakehouse.header.X-Iceberg-Access-Delegation  vended-credentials
+spark.sql.defaultCatalog                             lakehouse
+
+# メモリの制約（コンテナ 2GB）に合わせる
+spark.master                                         local[*]
+spark.driver.memory                                  1g
+spark.sql.shuffle.partitions                         4

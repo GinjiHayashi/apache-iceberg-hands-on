@@ -22,7 +22,7 @@ services:
       RUSTFS_CONSOLE_ADDRESS: ":9001"
     volumes:
       - rustfs-data:/data
-    mem_limit: 256m
+    mem_limit: 512m
     healthcheck:
       test: ["CMD-SHELL", "curl -sf http://127.0.0.1:9000/health && curl -sf http://127.0.0.1:9001/rustfs/console/health"]
       interval: 5s
@@ -114,6 +114,38 @@ services:
       interval: 2s
       timeout: 5s
       retries: 60
+
+  # --- クエリエンジン: Spark + JupyterLab + PyIceberg（profile: spark） --------
+  jupyter:
+    build: ./docker/jupyter
+    image: iceberg-handson-jupyter:local
+    profiles: [spark]
+    depends_on:
+      polaris-setup:
+        condition: service_healthy
+    # ホストのユーザーで動かし、ノートブックの所有者をホストと揃える
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    ports:
+      - "127.0.0.1:8888:8888" # JupyterLab
+      - "127.0.0.1:4040:4040" # Spark UI
+    environment:
+      POLARIS_CLIENT_ID: ${POLARIS_CLIENT_ID}
+      POLARIS_CLIENT_SECRET: ${POLARIS_CLIENT_SECRET}
+      # PyIceberg のカタログ設定（load_catalog("lakehouse") で読み込まれる）
+      PYICEBERG_CATALOG__LAKEHOUSE__TYPE: rest
+      PYICEBERG_CATALOG__LAKEHOUSE__URI: http://polaris:8181/api/catalog
+      PYICEBERG_CATALOG__LAKEHOUSE__WAREHOUSE: lakehouse
+      PYICEBERG_CATALOG__LAKEHOUSE__CREDENTIAL: ${POLARIS_CLIENT_ID}:${POLARIS_CLIENT_SECRET}
+      PYICEBERG_CATALOG__LAKEHOUSE__SCOPE: PRINCIPAL_ROLE:ALL
+    volumes:
+      - ./handson:/workspace/handson
+      - ./data:/workspace/data:ro
+    mem_limit: 2g
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8888/api"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
 
   # --- クエリエンジン: Trino（profile: trino） ---------------------------------
   trino:

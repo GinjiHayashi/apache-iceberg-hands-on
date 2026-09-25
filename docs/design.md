@@ -54,12 +54,12 @@ flowchart LR
 
 | サービス | profile | 公開ポート（`127.0.0.1`） | メモリ上限 | 役割 |
 | --- | --- | --- | --- | --- |
-| rustfs | 基盤 | 9000（S3）、9001（コンソール） | 256MB | オブジェクトストレージ |
+| rustfs | 基盤 | 9000（S3）、9001（コンソール） | 512MB | オブジェクトストレージ |
 | postgres | 基盤 | — | 256MB | Polaris のメタデータ |
 | polaris-bootstrap | 基盤 | — | — | admin-tool で realm と root 認証情報を作って終了（再実行しても安全） |
 | polaris | 基盤 | 8181（API） | 1GB（`-Xmx512m`） | Iceberg REST カタログ |
 | polaris-setup | 基盤 | — | 64MB | curl でバケット・カタログ・プリンシパル・ロール・権限・名前空間を作る。完了後は待機し、ヘルスチェックで完了を示す |
-| jupyter | `spark` | 8888（JupyterLab）、4040（Spark UI） | 2GB | Spark、PyIceberg |
+| jupyter | `spark` | 8888（JupyterLab）、4040（Spark UI） | 2GB | Spark、PyIceberg。ホストの UID で動かし、`handson/` と `data/`（読み取り専用）をマウントする |
 | trino | `trino` | 8080 | 2GB | Trino（single node） |
 
 起動順はヘルスチェックと `depends_on` の条件で制御する。
@@ -93,6 +93,8 @@ flowchart LR
 - `credential`、`scope=PRINCIPAL_ROLE:ALL`、`header.X-Iceberg-Access-Delegation=vended-credentials`
 - `spark.sql.extensions = org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions`
 - Iceberg の jar はイメージのビルド時に Maven Central から取得して `$SPARK_HOME/jars` に置く
+- 認証情報は環境変数から渡すため、`entrypoint.sh` が起動時にテンプレートから `spark-defaults.conf` を作る
+- ホストの UID はコンテナ内に登録がなく Hadoop のログインが失敗するので、`entrypoint.sh` が起動時に `/etc/passwd` に登録する
 
 **Trino**（`etc/catalog/lakehouse.properties`）
 
@@ -101,7 +103,7 @@ flowchart LR
 - `fs.s3.enabled=true`、`s3.endpoint=http://rustfs:9000`、`s3.region=us-east-1`、`s3.path-style-access=true`（Trino は払い出された認証情報のうちキーだけを使うので、エンドポイントなどはここに書く）
 - `iceberg.add-files-procedure.enabled=true`（追加目標の `add_files` 用）
 
-**PyIceberg**：`load_catalog` に REST の URI、`warehouse`、`credential`、`scope` を渡す。S3 の設定は Polaris から払い出されるものを使う。
+**PyIceberg**：カタログ設定を環境変数（`PYICEBERG_CATALOG__LAKEHOUSE__*`）で渡すので、`load_catalog("lakehouse")` だけで接続できる。S3 の設定は Polaris から払い出されるものを使う。
 
 ## Parquet から Iceberg への変換
 
