@@ -1,0 +1,16 @@
+[project]
+name = "iceberg-handson-jupyter"
+version = "0.1.0"
+description = "Jupyter コンテナの追加パッケージ（PySpark はベースイメージのものを使う）"
+# ベースイメージ apache/spark の Python（Ubuntu 22.04 のシステム Python）に合わせる
+requires-python = "==3.10.*"
+dependencies = [
+    "jupyterlab==4.6.4",
+    "ipykernel",
+    "pyiceberg[pyarrow]==0.12.0",
+    "pandas",
+    "duckdb",
+]
+
+[tool.uv]
+package = false
