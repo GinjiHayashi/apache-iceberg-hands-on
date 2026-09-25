@@ -20,7 +20,7 @@ make up-all
    make trino-sql FILE=handson/04_partition_evolution/trino.sql
    ```
 
-3. **RustFS**: コンソール（http://localhost:9001 ）で各テーブルの `data/` を開き、`pickup_at_month=...` と `pickup_at_day=...` のディレクトリが並んでいることを見る
+3. **ストレージ**: S3 ブラウザ（http://localhost:8081 ）で各テーブルの `data/` を開き、`pickup_at_month=...` と `pickup_at_day=...` のディレクトリが並んでいることを見る
 
 ## 観察のポイント
 

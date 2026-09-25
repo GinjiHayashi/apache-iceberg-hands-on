@@ -18,7 +18,7 @@ make up-all
    make trino-sql FILE=handson/08_metadata_tables/trino.sql
    ```
 
-3. **RustFS**: コンソール（http://localhost:9001 ）で `warehouse/handson/meta_spark/metadata/` を開き、
+3. **ストレージ**: S3 ブラウザ（http://localhost:8081 ）で `warehouse/handson/meta_spark/metadata/` を開き、
    `*.metadata.json`（メタデータファイル）、`snap-*.avro`（マニフェストリスト）、`*-m0.avro`（マニフェスト）が並んでいることを見る
 
 ## 主なメタデータテーブル

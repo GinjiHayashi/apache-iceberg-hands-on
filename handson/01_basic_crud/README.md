@@ -18,7 +18,7 @@ make up-all   # 基盤 + Spark + Trino を起動（片方だけなら make up-sp
    make trino-sql FILE=handson/01_basic_crud/trino.sql
    ```
 
-3. **RustFS**: コンソール（http://localhost:9001 、ログインは `.env` の `RUSTFS_ACCESS_KEY` / `RUSTFS_SECRET_KEY`）で `warehouse/handson/` を開き、テーブルごとに `data/` と `metadata/` ができていることを見る
+3. **ストレージ**: S3 ブラウザ（http://localhost:8081 ）で `warehouse` → `handson` を開き、テーブルごとに `data/` と `metadata/` ができていることを見る
 
 ## 観察のポイント
 

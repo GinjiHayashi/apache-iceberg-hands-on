@@ -1,6 +1,6 @@
 -- 06. 追加目標（任意）: Trino の add_files（1/2 テーブルを作る）
 -- 実行: make trino-sql FILE=handson/06_parquet_conversion/trino_add_files_1_create.sql
--- この後、README の手順で RustFS のコンソールから Parquet をアップロードし、2/2 を実行する。
+-- この後、README の手順で S3 ブラウザ（s3manager）から Parquet をアップロードし、2/2 を実行する。
 --
 -- Trino は中身のある場所にはテーブルを作れないので、アップロードより先にテーブルを作る。
 -- やり直すときは、README の「やり直すとき」の手順で片付けてから、このファイルから実行する。

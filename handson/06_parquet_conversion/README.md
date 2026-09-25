@@ -28,7 +28,15 @@ make up-all
    make trino-sql FILE=handson/06_parquet_conversion/trino_add_files_1_create.sql
    ```
 
-2. RustFS のコンソール（http://localhost:9001 ）で `warehouse` バケットを開き、`handson/taxi_trino_addfiles/import/` フォルダを作って `data/yellow_tripdata_2024-12.parquet` をアップロードする
+2. アップロードするフォルダを用意し、S3 ブラウザ（http://localhost:8081 ）でフォルダごとアップロードする
+
+   ```sh
+   mkdir -p data/import && cp data/yellow_tripdata_2024-12.parquet data/import/
+   ```
+
+   S3 ブラウザで `warehouse` → `handson` → `taxi_trino_addfiles` を開き、フォルダのアップロードで `data/import` フォルダを選ぶ。
+   `taxi_trino_addfiles/import/yellow_tripdata_2024-12.parquet` ができれば OK
+   （Windows のブラウザからは、エクスプローラーのアドレス欄に `\\wsl.localhost\Ubuntu\home\<ユーザー名>\...\data` と入れると WSL のフォルダを開ける）
 3. アップロードしたファイルを登録する
 
    ```sh
@@ -38,7 +46,7 @@ make up-all
 **やり直すとき**: この環境では、`add_files` で登録したファイルは `DROP TABLE` しても削除されずに残る。Trino は中身のある場所にテーブルを作れないので、次の手順で片付けてから 1. に戻る。
 
 1. `make trino-cli` で `DROP TABLE taxi_trino_addfiles;` を実行する
-2. RustFS のコンソールで `handson/taxi_trino_addfiles/` フォルダを削除する
+2. S3 ブラウザで `handson/taxi_trino_addfiles/` フォルダを削除する
 
 ## 観察のポイント
 

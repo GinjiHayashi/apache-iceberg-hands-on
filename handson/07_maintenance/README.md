@@ -18,7 +18,7 @@ make up-all
    make trino-sql FILE=handson/07_maintenance/trino.sql
    ```
 
-3. **（任意）Trino で孤立ファイルを消す**: RustFS のコンソール（http://localhost:9001 ）で `warehouse/handson/maint_trino-<ランダムな文字列>/data/` に適当なファイルをアップロードしてから、`make trino-cli` で次を実行する。`deleted_files_count` が 1 になる
+3. **（任意）Trino で孤立ファイルを消す**: S3 ブラウザ（http://localhost:8081 ）で `warehouse/handson/maint_trino-<ランダムな文字列>/data/` を開き、適当なファイルをアップロードしてから、`make trino-cli` で次を実行する。`deleted_files_count` が 1 になる
 
    ```sql
    ALTER TABLE maint_trino EXECUTE remove_orphan_files(retention_threshold => '0s');

@@ -18,7 +18,7 @@ flowchart LR
 | テーブルフォーマット | Apache Iceberg 1.11（format v2） |
 | クエリエンジン | Apache Spark 4.1.3（PySpark + JupyterLab）、Trino 483、PyIceberg 0.12 |
 | カタログ | Apache Polaris 1.7（メタデータは PostgreSQL に保存） |
-| ストレージ | RustFS 1.0（S3 互換、Web コンソール付き） |
+| ストレージ | RustFS 1.0（S3 互換）。中身は s3manager（Web UI）で閲覧する |
 
 構成の詳細と選定理由は [docs/design.md](docs/design.md) と [docs/adr/](docs/adr/) を参照してください。
 
@@ -44,12 +44,14 @@ make data       # サンプルデータ（NYC タクシー、約 120MB）を dat
 
 | 画面 | URL | 備考 |
 | --- | --- | --- |
-| JupyterLab | <http://localhost:8888> | 認証なし。VS Code からは「既存の Jupyter サーバー」に `http://localhost:8888` を指定する |
-| RustFS コンソール | <http://localhost:9001> | `.env` の `RUSTFS_ACCESS_KEY` / `RUSTFS_SECRET_KEY` でログイン |
+| JupyterLab | <http://localhost:8888> | 認証なし |
+| S3 ブラウザ（s3manager） | <http://localhost:8081> | ログイン不要。RustFS のバケットとファイルを閲覧・アップロード・削除できる |
 | Spark UI | <http://localhost:4040> | ノートブックで Spark を使っている間だけ開ける |
 | Trino UI | <http://localhost:8080> | ユーザー名は任意 |
 
 ポートはすべて `127.0.0.1` にだけ公開しているので、同じ PC の外からは接続できません。
+
+RustFS 自身のコンソール（<http://localhost:9001>）は、1.0.0 の不具合でログイン後に「セッションが切れた」となるため使いません（[rustfs/rustfs#8013](https://github.com/rustfs/rustfs/issues/8013)、[ADR 0006](docs/adr/0006-storage-browser-s3manager.md)）。
 
 ## ハンズオン
 
@@ -70,7 +72,7 @@ make data       # サンプルデータ（NYC タクシー、約 120MB）を dat
 
 各回は、Spark のノートブック（`spark.ipynb`）と Trino の SQL（`trino.sql`）の組み合わせです。
 
-- ノートブックは JupyterLab（または VS Code）で開いて上から実行する
+- ノートブックは JupyterLab で開いて上から実行する
 - SQL は `make trino-sql FILE=handson/<回>/trino.sql` で実行する
 
 ## Make コマンド

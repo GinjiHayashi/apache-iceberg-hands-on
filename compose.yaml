@@ -32,6 +32,27 @@ services:
       retries: 20
       start_period: 5s
 
+  # --- ストレージの閲覧用 Web UI ---------------------------------------------
+  # RustFS 1.0.0 のコンソールはログイン後に「セッションが切れた」となる不具合があるため
+  # （https://github.com/rustfs/rustfs/issues/8013）、軽量な S3 ブラウザを代わりに使う。
+  s3manager:
+    image: cloudlena/s3manager:v0.10.0
+    depends_on:
+      rustfs:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8081:8080" # Web UI
+    environment:
+      ENDPOINT: rustfs:9000
+      ACCESS_KEY_ID: ${RUSTFS_ACCESS_KEY}
+      SECRET_ACCESS_KEY: ${RUSTFS_SECRET_KEY}
+      REGION: us-east-1
+      USE_SSL: "false"
+      ALLOW_DELETE: "true"
+    # 60MB の Parquet をアップロードすると 64MB では OOM で落ちたため 256MB にする
+    mem_limit: 256m
+    restart: unless-stopped
+
   # --- カタログ DB: Polaris のメタデータ保存先 --------------------------------
   postgres:
     image: postgres:18.6

@@ -35,7 +35,8 @@ flowchart LR
     init["polaris-bootstrap<br/>polaris-setup"]
   end
   browser -- ":8888" --> jupyter
-  browser -- ":9001 コンソール" --> rustfs
+  browser -- ":8081" --> s3manager["s3manager<br/>S3 ブラウザ"]
+  s3manager --> rustfs
   make -- "trino CLI" --> trino
   jupyter -- "REST + OAuth2" --> polaris
   trino -- "REST + OAuth2" --> polaris
@@ -54,7 +55,8 @@ flowchart LR
 
 | サービス | profile | 公開ポート（`127.0.0.1`） | メモリ上限 | 役割 |
 | --- | --- | --- | --- | --- |
-| rustfs | 基盤 | 9000（S3）、9001（コンソール） | 1GB（512MB では OOM で停止した） | オブジェクトストレージ |
+| rustfs | 基盤 | 9000（S3）、9001（コンソール。不具合のため使わない） | 1GB（512MB では OOM で停止した） | オブジェクトストレージ |
+| s3manager | 基盤 | 8081（Web UI） | 256MB（64MB では 60MB のアップロードで OOM） | RustFS を閲覧する S3 ブラウザ（[ADR 0006](adr/0006-storage-browser-s3manager.md)） |
 | postgres | 基盤 | — | 256MB | Polaris のメタデータ |
 | polaris-bootstrap | 基盤 | — | — | admin-tool で realm と root 認証情報を作って終了（再実行しても安全） |
 | polaris | 基盤 | 8181（API） | 1GB（`-Xmx512m`） | Iceberg REST カタログ |

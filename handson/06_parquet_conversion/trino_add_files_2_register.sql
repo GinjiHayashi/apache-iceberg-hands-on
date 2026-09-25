@@ -1,5 +1,5 @@
 -- 06. 追加目標（任意）: Trino の add_files（2/2 ファイルを登録する）
--- RustFS のコンソールで warehouse/handson/taxi_trino_addfiles/import/ に
+-- S3 ブラウザ（s3manager）で warehouse/handson/taxi_trino_addfiles/import/ に
 -- yellow_tripdata_2024-12.parquet をアップロードしてから実行する:
 --   make trino-sql FILE=handson/06_parquet_conversion/trino_add_files_2_register.sql
 

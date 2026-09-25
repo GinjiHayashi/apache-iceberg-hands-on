@@ -32,11 +32,11 @@
 | クエリエンジン | Spark（PySpark）, Trino | 将来ほかのエンジンを追加できる構成にする |
 | 軽量クライアント | PyIceberg | Jupyter コンテナ内で使う（[ADR 0004](adr/0004-pyiceberg-in-container.md)）。範囲はテーブル一覧・pandas/DuckDB への読み込み・簡単な追記 |
 | カタログ | Apache Polaris | メタデータは PostgreSQL で永続化 |
-| ストレージ | RustFS | S3 互換。データは永続化し、Web コンソールで閲覧する（[ADR 0001](adr/0001-object-storage-rustfs.md)） |
+| ストレージ | RustFS | S3 互換。データは永続化し、Web UI で閲覧する（[ADR 0001](adr/0001-object-storage-rustfs.md)、[ADR 0006](adr/0006-storage-browser-s3manager.md)） |
 
 ### ハンズオン教材
 
-- Spark: 機能ごとの Jupyter ノートブック（JupyterLab と VS Code のどちらからでも実行できる）
+- Spark: 機能ごとの Jupyter ノートブック（JupyterLab で実行する）
 - Trino: `.sql` ファイルをコンテナ内の Trino CLI で実行
 - PyIceberg: Jupyter コンテナ内のノートブック
 
