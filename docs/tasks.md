@@ -16,7 +16,7 @@
 | # | タスク | 完了条件 | 状態 |
 | --- | --- | --- | --- |
 | 5 | リポジトリの土台 | `.gitignore`（`.env`、`data/`）、`.env.example`、ホストの `pyproject.toml`（`nbstripout`）がある。nbstripout が git の filter に登録され、`make help` がコマンド一覧を表示する | done |
-| 6 | 基盤サービス（RustFS、PostgreSQL、Polaris） | `make up` で全サービスが healthy または正常終了になる。Management API でカタログ `lakehouse` と名前空間 `handson` を確認でき、RustFS のコンソールで `warehouse` バケットが見える。`make down` → `make up` の後も状態が残り、`make reset` で消える | todo |
+| 6 | 基盤サービス（RustFS、PostgreSQL、Polaris） | `make up` で全サービスが healthy または正常終了になる。Management API でカタログ `lakehouse` と名前空間 `handson` を確認でき、RustFS のコンソールで `warehouse` バケットが見える。`make down` → `make up` の後も状態が残り、`make reset` で消える | done |
 | 7 | Trino | `make up-trino` で起動し、`make smoke` が成功する（テーブルを作り、INSERT と SELECT ができ、RustFS に data/metadata ファイルができる）。これで Polaris から払い出された認証情報による S3 アクセスも確認できる | todo |
 | 8 | Spark + JupyterLab | `make up-spark` で起動し、`localhost:8888` をブラウザと VS Code の両方から開ける。ノートブックから `lakehouse` にテーブルを作って読める。Spark で作ったテーブルを Trino から読める | todo |
 | 9 | PyIceberg | Jupyter コンテナ内のノートブックから `lakehouse` のテーブル一覧を取得し、pandas に読み込める | todo |

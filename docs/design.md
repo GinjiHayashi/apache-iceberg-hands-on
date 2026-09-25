@@ -15,7 +15,7 @@
 | カタログ | Apache Polaris 1.7.0 | `apache/polaris:1.7.0`、`apache/polaris-admin-tool:1.7.0` | [0002](adr/0002-version-matrix.md) |
 | カタログ DB | PostgreSQL 18.6 | `postgres:18.6` | [0002](adr/0002-version-matrix.md) |
 | ストレージ | RustFS 1.0.0 | `rustfs/rustfs:1.0.0` | [0001](adr/0001-object-storage-rustfs.md) |
-| 初期化用 | curl / AWS CLI | `alpine/curl:8.21.0`、`amazon/aws-cli:2.36.8` | — |
+| 初期化用 | curl | `alpine/curl:8.21.0` | — |
 | 実行基盤 | Docker Compose + Make + uv | — | — |
 
 ## アーキテクチャ
@@ -55,34 +55,32 @@ flowchart LR
 | サービス | profile | 公開ポート（`127.0.0.1`） | メモリ上限 | 役割 |
 | --- | --- | --- | --- | --- |
 | rustfs | 基盤 | 9000（S3）、9001（コンソール） | 256MB | オブジェクトストレージ |
-| rustfs-setup | 基盤 | — | — | `warehouse` バケットを作って終了 |
 | postgres | 基盤 | — | 256MB | Polaris のメタデータ |
 | polaris-bootstrap | 基盤 | — | — | admin-tool で realm と root 認証情報を作って終了（再実行しても安全） |
 | polaris | 基盤 | 8181（API） | 1GB（`-Xmx512m`） | Iceberg REST カタログ |
-| polaris-setup | 基盤 | — | — | curl でカタログ・プリンシパル・ロール・権限を作って終了 |
+| polaris-setup | 基盤 | — | 64MB | curl でバケット・カタログ・プリンシパル・ロール・権限・名前空間を作る。完了後は待機し、ヘルスチェックで完了を示す |
 | jupyter | `spark` | 8888（JupyterLab）、4040（Spark UI） | 2GB | Spark、PyIceberg |
 | trino | `trino` | 8080 | 2GB | Trino（single node） |
 
 起動順はヘルスチェックと `depends_on` の条件で制御する。
 
-`postgres`（healthy）→ `polaris-bootstrap`（completed）→ `polaris`（healthy）→ `rustfs-setup` / `polaris-setup`（completed）→ `jupyter` / `trino`
+`postgres`（healthy）→ `polaris-bootstrap`（completed）→ `polaris`（healthy）→ `polaris-setup`（healthy）→ `jupyter` / `trino`
 
 データは名前付きボリュームで永続化する（`rustfs-data`、`postgres-data`）。
 
 ## Polaris の初期設定
 
-`polaris-setup` の curl スクリプトが Management API を呼ぶ。手順は Polaris 公式 Quickstart と同じで、各呼び出しの前に日本語で目的を書く。
+`polaris-setup` の curl スクリプト（`docker/polaris/setup.sh`）が実行する。手順は Polaris 公式 Quickstart と同じで、各呼び出しの前に日本語で目的を書く。起動のたびに実行され、既に存在するもの（HTTP 409）はスキップする。
 
+0. `warehouse` バケットを作る（curl の `--aws-sigv4` で署名した S3 API 呼び出し）
 1. root の認証情報でトークンを取得する（`/api/catalog/v1/oauth/tokens`）
 2. カタログ `lakehouse` を作る
    - `storageType: S3`、`allowedLocations: ["s3://warehouse"]`
    - `endpoint` / `endpointInternal`: `http://rustfs:9000`
    - `pathStyleAccess: true`、`region: us-east-1`
-3. プリンシパルを作り、`clientId` / `clientSecret` を得る
+3. プリンシパル `handson_user` を作り、リセット API（`/principals/{name}/reset`）で認証情報を `.env` の固定値に置き換える
 4. プリンシパルロールとカタログロールを作って紐付け、カタログロールに `CATALOG_MANAGE_CONTENT` を付与する
-5. 名前空間 `handson` を作る
-
-エンジンに渡すプリンシパルの認証情報は、`.env` で固定値として指定する。実装時にこれを Polaris に登録する方法を確認し、できなければ共有ボリュームにファイルで書き出して各エンジンから読む。
+5. `handson_user` の権限で名前空間 `handson` を作る
 
 失敗したときの代替策: RustFS の STS が動かない場合は、カタログを `stsUnavailable: true` にして、各エンジンに静的な S3 キーを渡す。
 
