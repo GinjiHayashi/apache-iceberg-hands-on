@@ -20,7 +20,7 @@
 | 7 | Trino | `make up-trino` で起動し、`make smoke` が成功する（テーブルを作り、INSERT と SELECT ができ、RustFS に data/metadata ファイルができる）。これで Polaris から払い出された認証情報による S3 アクセスも確認できる | done |
 | 8 | Spark + JupyterLab | `make up-spark` で起動し、`localhost:8888` をブラウザと VS Code の両方から開ける。ノートブックから `lakehouse` にテーブルを作って読める。Spark で作ったテーブルを Trino から読める | doing（VS Code からの接続確認待ち） |
 | 9 | PyIceberg | Jupyter コンテナ内のノートブックから `lakehouse` のテーブル一覧を取得し、pandas に読み込める | done |
-| 10 | サンプルデータの取得 | `make data` で 2024-12 と 2025-01 の Parquet が `data/` に揃い、Jupyter コンテナから読める。再実行してもダウンロードし直さない | todo |
+| 10 | サンプルデータの取得 | `make data` で 2024-12 と 2025-01 の Parquet が `data/` に揃い、Jupyter コンテナから読める。再実行してもダウンロードし直さない | done |
 
 ## ハンズオン教材
 
