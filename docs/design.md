@@ -6,10 +6,10 @@
 
 | 役割 | 採用 | 決定記録 |
 | --- | --- | --- |
-| クエリエンジン | 未定 | - |
-| カタログ | 未定 | - |
-| ストレージ | 未定 | - |
-| 実行基盤 | 未定 | - |
+| クエリエンジン | Spark (PySpark), Trino, PyIceberg | 要件で指定 |
+| カタログ | Apache Polaris（PostgreSQL で永続化） | 要件で指定 |
+| ストレージ | RustFS | [0001](adr/0001-object-storage-rustfs.md) |
+| 実行基盤 | Docker Compose + uv | 要件で指定 |
 
 ## アーキテクチャ
 
